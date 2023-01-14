@@ -3,6 +3,9 @@
 package Tag
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
@@ -23,7 +26,9 @@ func _tagMw() []app.HandlerFunc {
 
 func _createMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return []app.HandlerFunc{func(c context.Context, ctx *app.RequestContext) {
+		fmt.Printf("create tag named %s\n", ctx.Request.Body())
+	}}
 }
 
 func _createtagMw() []app.HandlerFunc {
