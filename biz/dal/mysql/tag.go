@@ -35,6 +35,15 @@ func QueryTag(name string, state int8, page, pageSize int64) ([]*model.Tag, int6
 	return res, total, nil
 }
 
+func Query(id int) (*model.Tag, error) {
+	db := DB.Model(&model.Tag{}).Where("id = ?", id)
+	var res *model.Tag
+	if err := db.Find(&res).Error; err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func CreateTag(tags []*model.Tag) error {
 	return DB.Create(tags).Error
 }

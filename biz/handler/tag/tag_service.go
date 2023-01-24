@@ -4,8 +4,11 @@ package tag
 
 import (
 	"context"
+	"encoding/json"
 
+	"blog_hertz/biz/dal/goredis"
 	"blog_hertz/biz/dal/mysql"
+	"blog_hertz/biz/handler/cache_service"
 	"blog_hertz/biz/model"
 	tag "blog_hertz/biz/model/tag"
 	"blog_hertz/biz/pack"
@@ -51,12 +54,31 @@ func DeleteTag(ctx context.Context, c *app.RequestContext) {
 		c.JSON(200, &tag.DeleteTagResponse{Code: tag.Code_ParamInvalid, Msg: err.Error()})
 		return
 	}
+	var res *model.Tag
+	if res, err = mysql.Query(int(req.TagID)); err != nil {
+		hlog.Errorf("svc.Query err: %v", err)
+		c.JSON(200, &tag.DeleteTagResponse{Code: tag.Code_DBErr, Msg: err.Error()})
+		return
+	}
 	if err = mysql.DeleteTag(req.TagID); err != nil {
 		hlog.Errorf("svc.DeleteTag err: %v", err)
 		c.JSON(200, &tag.DeleteTagResponse{Code: tag.Code_DBErr, Msg: err.Error()})
 		return
 	}
-
+	cache := cache_service.Tag{
+		Name: res.Name,
+	}
+	key := cache.GetTagsKey()
+	if !goredis.Exists(key) {
+		hlog.Infof(" %s delete redis cache miss!", key)
+		c.JSON(200, &tag.DeleteTagResponse{Code: tag.Code_Success})
+		return
+	}
+	if _, err = goredis.Delete(key); err != nil {
+		hlog.Errorf("goredis delete errs: %v", err)
+		return
+	}
+	hlog.Info("redis cache delete!")
 	c.JSON(200, &tag.DeleteTagResponse{Code: tag.Code_Success})
 }
 
@@ -72,12 +94,33 @@ func GetTagList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	var cacheTags []*model.Tag
+	cache := cache_service.Tag{
+		Name: req.Name,
+	}
+
+	key := cache.GetTagsKey()
+	hlog.Infof(" %s redis cache !", key)
+	if goredis.Exists(key) {
+		data, err := goredis.Get(key)
+		if err != nil {
+			hlog.Errorf("goredis get errs: %v", err)
+			return
+		}
+		hlog.Info("redis cache hit!")
+		json.Unmarshal(data, &cacheTags)
+		c.JSON(200, &tag.TagListResponse{Code: tag.Code_Success, Tags: pack.Tags(cacheTags), Totoal: int64(len(cacheTags))})
+		return
+	}
+
 	tags, total, err := mysql.QueryTag(req.Name, req.State, req.Page, req.PageSize)
 	if err != nil {
 		hlog.Errorf("svc.GetTagList err: %v", err)
 		c.JSON(200, &tag.TagListResponse{Code: tag.Code_DBErr, Msg: err.Error()})
 		return
 	}
+	hlog.Info("redis cache miss!")
+	goredis.Set(key, tags, 3600)
 	c.JSON(200, &tag.TagListResponse{Code: tag.Code_Success, Tags: pack.Tags(tags), Totoal: total})
 }
 
