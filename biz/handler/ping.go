@@ -3,16 +3,20 @@
 package handler
 
 import (
+	"blog_hertz/biz/model"
+	"blog_hertz/biz/mw"
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/cloudwego/hertz/pkg/protocol/consts"
 )
 
 // Ping .
 func Ping(ctx context.Context, c *app.RequestContext) {
-	c.JSON(consts.StatusOK, utils.H{
-		"message": "pong",
+	// invoke jwt.IdentityHandler
+	user, _ := c.Get(mw.IdentityKey)
+	c.JSON(200, utils.H{
+		"message": fmt.Sprintf("username:%v", user.(*model.User).UserName),
 	})
 }
