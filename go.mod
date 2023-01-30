@@ -16,9 +16,13 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.1 // indirect
-	github.com/gomodule/redigo v1.8.9 // indirect
+	github.com/gomodule/redigo v2.0.0+incompatible // indirect
+	github.com/gorilla/context v1.1.1 // indirect
+	github.com/gorilla/securecookie v1.1.1 // indirect
+	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/hertz-contrib/i18n v0.0.1 // indirect
 	github.com/hertz-contrib/jwt v1.0.2 // indirect
+	github.com/hertz-contrib/sessions v1.0.1 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.2.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect

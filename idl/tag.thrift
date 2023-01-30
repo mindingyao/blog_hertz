@@ -34,7 +34,7 @@ struct TagListResponse{
 }
 
 struct CreateTagRequest {
-	1: string  name (api.body="name", api.form="name",api.vd="(len($) > 0 && len($) < 100)")
+	1: string  name (api.body="name", api.form="name", api.vd="(len($) > 0 && len($) < 100)")
 	2: i8  state (api.body="state", api.default="1", api.form="state", api.vd="($ == 0||$ == 1)")
 }
 
